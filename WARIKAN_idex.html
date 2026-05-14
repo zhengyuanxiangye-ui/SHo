@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>飲み会 割り勘メーカー</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #f8fbff, #eef6ff 45%, #fff7f0);
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(980px, 92%);
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    header { text-align: center; margin-bottom: 24px; }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #ffffffaa;
+      border: 1px solid #dbeafe;
+      color: #2563eb;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 6vw, 46px);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+
+    .lead {
+      margin: 14px auto 0;
+      max-width: 680px;
+      color: #64748b;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(226,232,240,0.95);
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      padding: 22px;
+      backdrop-filter: blur(12px);
+    }
+
+    .card h2 { margin: 0 0 14px; font-size: 20px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      color: #475569;
+      margin: 16px 0 8px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 14px 15px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th:last-child, td:last-child { border-right: none; }
+    tr:last-child td { border-bottom: none; }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .drink-label {
+      text-align: left;
+      font-weight: 900;
+      color: #334155;
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+
+    .counter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-btn {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+      background: #eff6ff;
+      color: #2563eb;
+      transition: 0.15s;
+    }
+
+    .count-btn:hover { transform: translateY(-1px); background: #dbeafe; }
+
+    .count-num {
+      min-width: 28px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    button.main {
+      width: 100%;
+      margin-top: 18px;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 18px;
+      font-size: 16px;
+      font-weight: 900;
+      color: white;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      cursor: pointer;
+      box-shadow: 0 14px 26px rgba(37, 99, 235, 0.26);
+      transition: 0.2s;
+    }
+
+    button.main:hover { transform: translateY(-1px); }
+
+    .sub-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .sub-button {
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .empty { color: #94a3b8; line-height: 1.8; padding: 24px 0; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .summary-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .summary-item span {
+      display: block;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 800;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+    }
+
+    .result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .result-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+    }
+
+    .result-title { font-weight: 900; }
+    .result-meta { color: #64748b; font-size: 13px; margin-top: 3px; }
+
+    .price {
+      font-size: 20px;
+      font-weight: 950;
+      color: #2563eb;
+      white-space: nowrap;
+    }
+
+    .check {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-weight: 900;
+      line-height: 1.6;
+    }
+
+    .error {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #be123c;
+      font-weight: 800;
+      line-height: 1.6;
+    }
+
+    .rule-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #475569;
+      line-height: 1.9;
+      font-size: 14px;
+    }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .grid, .row, .summary, .sub-actions { grid-template-columns: 1fr; }
+      .container { padding-top: 20px; }
+      .card { padding: 18px; border-radius: 22px; }
+      .result-item { grid-template-columns: 1fr; }
+      th, td { padding: 10px 8px; }
+      .count-btn { width: 32px; height: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div class="badge">表で人数を入れるだけ</div>
+      <h1>飲み会 割り勘メーカー</h1>
+      <p class="lead">
+        合計金額を入れて、表の人数を＋/−で調整するだけ。学年と飲酒/非飲酒を考慮して、500円単位で読み上げやすく計算します。
+      </p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>入力</h2>
+
+        <label for="total">合計金額</label>
+        <input id="total" type="text" inputmode="numeric" value="48000" placeholder="例：48000" oninput="calculate()" />
+        <div class="hint">カンマありでもOK：例 <span class="code">48,000</span></div>
+
+        <label>人数</label>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>4回生</th>
+                <th>3回生</th>
+                <th>2回生</th>
+                <th>1回生</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="drink-label">飲酒</td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('4D', -1)">−</button><span id="4D" class="count-num">2</span><button class="count-btn" onclick="changeCount('4D', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('3D', -1)">−</button><span id="3D" class="count-num">2</span><button class="count-btn" onclick="changeCount('3D', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('2D', -1)">−</button><span id="2D" class="count-num">3</span><button class="count-btn" onclick="changeCount('2D', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('1D', -1)">−</button><span id="1D" class="count-num">1</span><button class="count-btn" onclick="changeCount('1D', 1)">＋</button></div></td>
+              </tr>
+              <tr>
+                <td class="drink-label">非飲酒</td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('4N', -1)">−</button><span id="4N" class="count-num">0</span><button class="count-btn" onclick="changeCount('4N', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('3N', -1)">−</button><span id="3N" class="count-num">1</span><button class="count-btn" onclick="changeCount('3N', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('2N', -1)">−</button><span id="2N" class="count-num">1</span><button class="count-btn" onclick="changeCount('2N', 1)">＋</button></div></td>
+                <td><div class="counter"><button class="count-btn" onclick="changeCount('1N', -1)">−</button><span id="1N" class="count-num">2</span><button class="count-btn" onclick="changeCount('1N', 1)">＋</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hint">横が学年、縦が飲酒/非飲酒。セルの数字が人数です。</div>
+
+        <div class="row">
+          <div>
+            <label for="roundUnit">丸め単位</label>
+            <select id="roundUnit" onchange="calculate()">
+              <option value="500" selected>500円</option>
+              <option value="100">100円</option>
+              <option value="1000">1000円</option>
+            </select>
+          </div>
+          <div>
+            <label for="mode">調整方針</label>
+            <select id="mode" onchange="calculate()">
+              <option value="senior" selected>上回生で調整</option>
+              <option value="smooth">差をなめらかに</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="main" onclick="calculate()">割り勘を計算する</button>
+        <div class="sub-actions">
+          <button class="sub-button" onclick="resetCounts()">人数をリセット</button>
+          <button class="sub-button" onclick="fillSample()">サンプル</button>
+        </div>
+      </div>
+
+      <div class="card result-box">
+        <h2>結果</h2>
+        <div id="result" class="empty">ここに結果が表示されます。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:20px;">
+      <h2>このサイトのルール</h2>
+      <ul class="rule-list">
+        <li>表の数字を増減するだけで、人数を入力できます。</li>
+        <li>1回生はかなり軽め、2回生は少し軽め、3回生はやや多め、4回生は多めにします。</li>
+        <li>3回生と2回生の差は大きくなりすぎないようにしています。</li>
+        <li>非飲酒は同じ学年の飲酒より軽くします。</li>
+        <li>端数やズレは、基本的に上回生側で吸収します。</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const keys = ["4D", "3D", "2D", "1D", "4N", "3N", "2N", "1N"];
+
+    const labels = {
+      "4D": "4回生（飲酒）",
+      "4N": "4回生（非飲酒）",
+      "3D": "3回生（飲酒）",
+      "3N": "3回生（非飲酒）",
+      "2D": "2回生（飲酒）",
+      "2N": "2回生（非飲酒）",
+      "1D": "1回生（飲酒）",
+      "1N": "1回生（非飲酒）"
+    };
+
+    const weights = {
+      "4D": 1.65,
+      "4N": 1.25,
+      "3D": 1.35,
+      "3N": 1.08,
+      "2D": 1.12,
+      "2N": 0.86,
+      "1D": 0.58,
+      "1N": 0.42
+    };
+
+    const priority = {
+      "4D": 8,
+      "4N": 7,
+      "3D": 6,
+      "3N": 5,
+      "2D": 4,
+      "2N": 3,
+      "1D": 2,
+      "1N": 1
+    };
+
+    function yen(n) {
+      return Math.round(n).toLocaleString("ja-JP") + "円";
+    }
+
+    function parseTotal(value) {
+      const cleaned = String(value).replace(/[円,，\s]/g, "");
+      const num = Number(cleaned);
+      if (!Number.isFinite(num) || num <= 0) throw new Error("合計金額を正しく入力してね。");
+      return Math.round(num);
+    }
+
+    function getCount(key) {
+      return Number(document.getElementById(key).textContent) || 0;
+    }
+
+    function setCount(key, value) {
+      document.getElementById(key).textContent = Math.max(0, value);
+    }
+
+    function changeCount(key, delta) {
+      setCount(key, getCount(key) + delta);
+      calculate();
+    }
+
+    function getGroups() {
+      return keys
+        .map(key => ({ key, count: getCount(key), label: labels[key], weight: weights[key] }))
+        .filter(g => g.count > 0)
+        .sort((a, b) => priority[b.key] - priority[a.key]);
+    }
+
+    function roundToUnit(value, unit) {
+      return Math.round(value / unit) * unit;
+    }
+
+    function calculateAmounts(total, groups, unit, mode) {
+      const people = [];
+      const totalWeight = groups.reduce((sum, g) => sum + g.weight * g.count, 0);
+      if (totalWeight <= 0) throw new Error("人数を1人以上入力してね。");
+
+      for (const g of groups) {
+        const raw = total * g.weight / totalWeight;
+        const rounded = Math.max(0, roundToUnit(raw, unit));
+        for (let i = 0; i < g.count; i++) {
+          people.push({ key: g.key, label: g.label, raw, amount: rounded, priority: priority[g.key] });
+        }
+      }
+
+      let current = people.reduce((sum, p) => sum + p.amount, 0);
+      let diff = total - current;
+
+      const sorted = [...people].sort((a, b) => {
+        if (mode === "smooth") return Math.abs(b.raw - b.amount) - Math.abs(a.raw - a.amount);
+        return b.priority - a.priority;
+      });
+
+      let guard = 0;
+      while (Math.abs(diff) >= unit && guard < 1000) {
+        const target = diff > 0
+          ? sorted.find(p => p.priority >= 3) || sorted[0]
+          : sorted.find(p => p.amount - unit >= 0 && p.priority >= 3) || sorted.find(p => p.amount - unit >= 0);
+        if (!target) break;
+        target.amount += diff > 0 ? unit : -unit;
+        diff = total - people.reduce((sum, p) => sum + p.amount, 0);
+        guard++;
+      }
+
+      diff = total - people.reduce((sum, p) => sum + p.amount, 0);
+      if (diff !== 0) sorted[0].amount += diff;
+
+      return people;
+    }
+
+    function compressPeople(people) {
+      const map = new Map();
+      for (const p of people) {
+        const key = `${p.label}|${p.amount}`;
+        if (!map.has(key)) map.set(key, { label: p.label, amount: p.amount, count: 0, priority: p.priority });
+        map.get(key).count++;
+      }
+      return [...map.values()].sort((a, b) => b.priority - a.priority || b.amount - a.amount);
+    }
+
+    function calculate() {
+      const result = document.getElementById("result");
+      try {
+        const total = parseTotal(document.getElementById("total").value);
+        const groups = getGroups();
+        const unit = Number(document.getElementById("roundUnit").value);
+        const mode = document.getElementById("mode").value;
+        const people = calculateAmounts(total, groups, unit, mode);
+        const compressed = compressPeople(people);
+        const finalTotal = people.reduce((sum, p) => sum + p.amount, 0);
+        const count = people.length;
+
+        const summaryHtml = `
+          <div class="summary">
+            <div class="summary-item"><span>合計金額</span><strong>${yen(total)}</strong></div>
+            <div class="summary-item"><span>人数</span><strong>${count}人</strong></div>
+            <div class="summary-item"><span>丸め</span><strong>${yen(unit)}単位</strong></div>
+          </div>
+        `;
+
+        const listHtml = compressed.map(item => `
+          <div class="result-item">
+            <div>
+              <div class="result-title">${item.label}</div>
+              <div class="result-meta">${item.count}人</div>
+            </div>
+            <div class="price">${yen(item.amount)} × ${item.count}</div>
+          </div>
+        `).join("");
+
+        result.className = "";
+        result.innerHTML = `
+          ${summaryHtml}
+          <div class="result-list">${listHtml}</div>
+          <div class="check">合計チェック：${yen(finalTotal)} ${finalTotal === total ? "ぴったり！" : ""}</div>
+        `;
+      } catch (err) {
+        result.className = "";
+        result.innerHTML = `<div class="error">${err.message}</div>`;
+      }
+    }
+
+    function resetCounts() {
+      keys.forEach(key => setCount(key, 0));
+      calculate();
+    }
+
+    function fillSample() {
+      document.getElementById("total").value = "48000";
+      const sample = { "4D": 2, "4N": 0, "3D": 2, "3N": 1, "2D": 3, "2N": 1, "1D": 1, "1N": 2 };
+      keys.forEach(key => setCount(key, sample[key] || 0));
+      calculate();
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
